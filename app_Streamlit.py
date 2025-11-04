@@ -1,4 +1,28 @@
+import os
+import requests
+import zipfile
 import streamlit as st
+
+MODEL_FILES = [
+    "model_shakespeare_state.pt",
+    "model_linux_state.pt",
+    "stoi_shake(1).pkl", "itos_shake(1).pkl",
+    "stoi_code(1).pkl", "itos_code(1).pkl"
+]
+
+if not all(os.path.exists(p) for p in MODEL_FILES):
+    st.info("Downloading model weights from GitHub release… please wait (~250 MB).")
+    url = "https://github.com/mayankgul/es335-assignment3/releases/download/v1.0/Models.zip"
+    zip_path = "Models.zip"
+
+    # Download and extract
+    with open(zip_path, "wb") as f:
+        f.write(requests.get(url).content)
+
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
+        zip_ref.extractall(".")
+    st.success("Model weights downloaded successfully.")
+
 import torch
 import torch.nn as nn
 import pickle
@@ -103,4 +127,5 @@ if st.button("Generate"):
                                             emb_dim, context_len, [1024], activation)
     output = generate(model, stoi, itos, seed_text, k, context_len, PAD_IDX, temperature)
     st.subheader(" Generated Output:")
+
     st.write(output)
